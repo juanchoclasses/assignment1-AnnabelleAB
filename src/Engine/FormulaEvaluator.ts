@@ -43,44 +43,106 @@ export class FormulaEvaluator {
     * 
    */
 
+
+
   evaluate(formula: FormulaType) {
+    // Initialize stacks for numbers and operators
+    const values: number[] = [];
+    const ops: string[] = [];
 
-
-    // set the this._result to the length of the formula
-
-    this._result = formula.length;
+    // Reset error messages
     this._errorMessage = "";
 
-    switch (formula.length) {
-      case 0:
-        this._errorMessage = ErrorMessages.emptyFormula;
+    for (let i = 0; i < formula.length; i++) {
+      let token = formula[i];
+
+      if (this.isNumber(token)) {
+        values.push(Number(token));
+      } else if (this.isCellReference(token)) {
+        const [value, error] = this.getCellValue(token);
+        if (error) {
+          this._errorMessage = error;
+          return;
+        }
+        values.push(value);
+      } else if (token === '(') {
+        ops.push(token);
+      } else if (token === ')') {
+        while (ops.length && ops[ops.length - 1] !== '(') {
+          this.applyOp(ops.pop()!, values);
+          if (this._errorMessage) return; // Stop if an error occurred
+        }
+        ops.pop();
+      } else { // Assuming token is an operator
+        while (ops.length && this.precedence(ops[ops.length - 1]) >= this.precedence(token)) {
+          this.applyOp(ops.pop()!, values);
+          if (this._errorMessage) return; // Stop if an error occurred
+        }
+        ops.push(token);
+      }
+    }
+
+    // Remaining operations
+    while (ops.length) {
+      this.applyOp(ops.pop()!, values);
+      if (this._errorMessage) return; // Stop if an error occurred
+    }
+
+    if (values.length > 1) {
+      this._errorMessage = ErrorMessages.invalidFormula; // Unclear formula
+      return;
+    }
+
+    this._result = values.pop() || 0;
+  }
+
+  // Function to apply an operator to top two elements in the values stack
+  private applyOp(op: string, values: number[]) {
+    const val2 = values.pop()!;
+    const val1 = values.pop()!;
+    let output: number;
+
+    switch (op) {
+      case '+':
+        output = val1 + val2;
         break;
-      case 7:
-        this._errorMessage = ErrorMessages.partial;
+      case '-':
+        output = val1 - val2;
         break;
-      case 8:
-        this._errorMessage = ErrorMessages.divideByZero;
+      case '*':
+        output = val1 * val2;
         break;
-      case 9:
-        this._errorMessage = ErrorMessages.invalidCell;
-        break;
-      case 10:
-        this._errorMessage = ErrorMessages.invalidFormula;
-        break;
-      case 11:
-        this._errorMessage = ErrorMessages.invalidNumber;
-        break;
-      case 12:
-        this._errorMessage = ErrorMessages.invalidOperator;
-        break;
-      case 13:
-        this._errorMessage = ErrorMessages.missingParentheses;
+      case '/':
+        if (val2 === 0) {
+          this._errorMessage = ErrorMessages.divideByZero;
+          return;
+        }
+        output = val1 / val2;
         break;
       default:
-        this._errorMessage = "";
-        break;
+        this._errorMessage = ErrorMessages.invalidOperator;
+        return;
+    }
+
+    values.push(output);
+  }
+
+  // Function to return precedence of operators
+  private precedence(op: string): number {
+    switch (op) {
+      case '+':
+      case '-':
+        return 1;
+      case '*':
+      case '/':
+        return 2;
+      default:
+        return 0;
     }
   }
+
+
+
 
   public get error(): string {
     return this._errorMessage
