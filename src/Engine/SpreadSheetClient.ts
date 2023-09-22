@@ -278,10 +278,27 @@ class SpreadSheetClient {
                 this._updateDocument(document);
             });
     }
-
+    // implement function of AC button
     public clearFormula(): void {
-        return;
+        const requestClearFormulaURL = `${this._baseURL}/document/clearformula/${this._documentName}`;
+        fetch(requestClearFormulaURL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "userName": this._userName })
+        })
+            .then(response => {
+                return response.json() as Promise<DocumentTransport>;
+            })
+            .then((document: DocumentTransport) => {
+                this._updateDocument(document);
+            })
+            .catch(error => {
+                console.error('There was a problem with the clearFormula request:', error);
+            });
     }
+
 
 
 
