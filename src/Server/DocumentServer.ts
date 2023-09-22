@@ -142,6 +142,7 @@ app.put('/document/cell/edit/:name/:cell', (req: express.Request, res: express.R
     const userName = req.body.userName;
     if (!userName) {
         res.status(400).send('userName is required');
+
         return;
     }
     // request access to the cell
