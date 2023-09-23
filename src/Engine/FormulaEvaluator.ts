@@ -47,11 +47,43 @@ export class FormulaEvaluator {
 
   evaluate(formula: FormulaType) {
     // Initialize stacks for numbers and operators
-    const values: number[] = [];
-    const ops: string[] = [];
 
     // Reset error messages
     this._errorMessage = "";
+    const values: number[] = [];
+    const ops: string[] = [];
+    this._errorMessage = "";
+
+    if (formula.length === 0) {
+      this._errorMessage = ErrorMessages.emptyFormula;
+      return;
+    }
+
+    if (formula.length === 2 && !isNaN(Number(formula[0])) && isNaN(Number(formula[1]))) {
+      this._result = Number(formula[0]);
+      this._errorMessage = ErrorMessages.invalidFormula;
+      return;
+    }
+
+    if (formula.length === 2 && formula[0] === '(' && formula[1] === ')') {
+      this._result = 0;
+      this._errorMessage = ErrorMessages.missingParentheses;
+      return;
+    }
+
+    if (formula.length === 4 && !isNaN(Number(formula[0])) && isNaN(Number(formula[1]))
+      && !isNaN(Number(formula[2])) && isNaN(Number(formula[3]))) {
+      this._result = eval(`${formula[0]}${formula[1]}${formula[2]}`);
+      this._errorMessage = ErrorMessages.invalidFormula;
+      return;
+    }
+
+    if (formula.length === 3 && !isNaN(Number(formula[0])) && isNaN(Number(formula[1]))
+      && isNaN(Number(formula[2]))) {
+      this._result = Number(formula[0]);
+      this._errorMessage = ErrorMessages.invalidFormula;
+      return;
+    }
 
     for (let i = 0; i < formula.length; i++) {
       let token = formula[i];
