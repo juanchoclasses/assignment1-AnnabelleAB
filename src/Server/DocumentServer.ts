@@ -240,7 +240,7 @@ app.put('/document/removetoken/:name', (req: express.Request, res: express.Respo
 
     res.status(200).send(resultJSON);
 });
-// Add this new endpoint to your server.ts
+
 app.put('/document/clearformula/:name', (req: express.Request, res: express.Response) => {
     const name = req.params.name;
 
