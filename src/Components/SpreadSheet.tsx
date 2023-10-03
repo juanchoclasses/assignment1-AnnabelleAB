@@ -29,7 +29,7 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
   const [currentCell, setCurrentCell] = useState(spreadSheetClient.getWorkingCellLabel());
   const [currentlyEditing, setCurrentlyEditing] = useState(spreadSheetClient.getEditStatus());
   const [userName, setUserName] = useState(window.sessionStorage.getItem('userName') || "");
-
+  const [isUserNameRequired, setIsUserNameRequired] = useState(false); // New state for tracking empty username
 
   function updateDisplayValues(): void {
     spreadSheetClient.userName = userName;
@@ -60,11 +60,18 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
         onChange={(event) => {
           // get the text from the input
           let userName = event.target.value;
+          if (!userName) {
+            setIsUserNameRequired(true);
+          } else {
+            setIsUserNameRequired(false);
+          }
+
           window.sessionStorage.setItem('userName', userName);
           // set the user name
           setUserName(userName);
           spreadSheetClient.userName = userName;
         }} />
+      {isUserNameRequired && <div>Username is required</div>}
     </div>
 
   }
@@ -83,7 +90,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    */
   async function onCommandButtonClick(text: string): Promise<void> {
 
-
+    if (!userName) {
+      alert('Please enter your username first.');
+      return;
+    }
     switch (text) {
       case ButtonNames.edit_toggle:
         if (currentlyEditing) {
@@ -116,7 +126,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    * 
    * */
   function onButtonClick(event: React.MouseEvent<HTMLButtonElement>): void {
-
+    if (!userName) {
+      alert('Please enter your username first.');
+      return;
+    }
     const text = event.currentTarget.textContent;
     let trueText = text ? text : "";
     spreadSheetClient.setEditStatus(true);
@@ -136,7 +149,10 @@ function SpreadSheet({ documentName }: SpreadSheetProps) {
    * If the edit status is false then it will ask the machine to update the current formula.
    */
   function onCellClick(event: React.MouseEvent<HTMLButtonElement>): void {
-
+    if (!userName) {
+      alert('Please enter your username first.');
+      return;
+    }
     const cellLabel = event.currentTarget.getAttribute("cell-label");
     // calculate the current row and column of the clicked on cell
 

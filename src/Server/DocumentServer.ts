@@ -142,6 +142,7 @@ app.put('/document/cell/edit/:name/:cell', (req: express.Request, res: express.R
     const userName = req.body.userName;
     if (!userName) {
         res.status(400).send('userName is required');
+
         return;
     }
     // request access to the cell
@@ -238,6 +239,34 @@ app.put('/document/removetoken/:name', (req: express.Request, res: express.Respo
 
 
     res.status(200).send(resultJSON);
+});
+
+app.put('/document/clearformula/:name', (req: express.Request, res: express.Response) => {
+    const name = req.params.name;
+
+    // Validate that the document exists
+    const documentNames = documentHolder.getDocumentNames();
+    if (documentNames.indexOf(name) === -1) {
+        res.status(404).send(`Document ${name} not found`);
+        return;
+    }
+
+    // Get the user name from the request body
+    const userName = req.body.userName;
+    if (!userName) {
+        res.status(400).send('userName is required');
+        return;
+    }
+
+    // Call the DocumentHolder's method to clear the formula
+    const resultJSON = documentHolder.clearFormula(name, userName);
+
+    // Validate the result and send the response
+    if (resultJSON) {
+        res.status(200).send(resultJSON);
+    } else {
+        res.status(500).send('Failed to clear the formula'); // or handle the error appropriately
+    }
 });
 
 // get the port we should be using
